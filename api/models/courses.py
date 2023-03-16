@@ -31,3 +31,10 @@ class Course(db.Model):
         return cls.query.get_or_404(id)
 
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+
+

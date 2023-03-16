@@ -66,15 +66,32 @@ class GetUpdateDeleteCourse(Resource):
     def get(self, course_id):
         """get course by id """
         course = Course.get_by_id(course_id)
+
         return course, HTTPStatus.OK
 
+    @course_namespace.expect(course_model)
+    @course_namespace.marshal_with(course_model)
     def patch(self, course_id):
         """update course  """
-        pass
+        data = course_namespace.payload
+        course = Course.get_by_id(course_id)
+        if course is not None:
+            course.name = data['name']
+            course.status = data['status']
 
+            course.save()
+            return course, HTTPStatus.OK
+
+    @course_namespace.marshal_with(course_model)
+    @jwt_required()
     def delete(self, course_id):
         """delete course by id """
-        pass
+        course = Course.get_by_id(course_id)
+        if course is not None:
+            course.delete()
+            return course, HTTPStatus.NO_CONTENT
+
+
 
 
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')
