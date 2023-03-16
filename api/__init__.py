@@ -22,7 +22,7 @@ def create_app(config=config_dict['dev']):
     api = Api(app)
     api.add_namespace(user_namespace, path='')
     api.add_namespace(auth_namespace, path='/auth')
-    api.add_namespace(course_namespace, path='/courses.py')
+    api.add_namespace(course_namespace, path='/courses')
 
     @app.shell_context_processor
     def make_shell_context():

@@ -1,8 +1,10 @@
 from flask_restx import Namespace, Resource, fields
+from ..models.courses import Course
+from http import HTTPStatus
 
 course_namespace = Namespace('course', description="Namespace for courses.py")
 
-course_namespace.model(
+course_model= course_namespace.model(
     'Course', {
         'id': fields.Integer(description="course id"),
         'name': fields.String(description="course name", required=True),
@@ -15,11 +17,13 @@ course_namespace.model(
 )
 
 
-@course_namespace.route('/course')
+@course_namespace.route('/courses')
 class CourseGetCreate(Resource):
+    @course_namespace.marshal_with(course_model)
     def get(self):
-        """ Get all courses.py"""
-        pass
+        """ Get all courses"""
+        courses = Course.query.all()
+        return courses, HTTPStatus.OK
 
     def post(self):
         """create course"""
