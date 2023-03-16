@@ -11,6 +11,7 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean(), default=False)
     is_active = db.Column(db.Boolean(), default=False)
     courses = db.relationship('Course', backref='users', lazy=True)
+    courses_work = db.relationship('CourseWork', backref='users', lazy=True)
     def __repr__(self):
         return f"<User {self.name}>"
 

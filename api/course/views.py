@@ -1,6 +1,18 @@
-from flask_restx import Resource, Namespace
+from flask_restx import Namespace, Resource, fields
 
 course_namespace = Namespace('course', description="Namespace for courses.py")
+
+course_namespace.model(
+    'Course', {
+        'id': fields.Integer(description="course id"),
+        'name': fields.String(description="course name", required=True),
+        'status': fields.String(description="completion status", required=True, enum=['INPROGRESS',
+                                                                                      'COMPLETE',
+                                                                                      'PASSED',
+                                                                                      'FAILED']),
+        'mark': fields.Decimal()
+    }
+)
 
 
 @course_namespace.route('/course')
@@ -20,11 +32,13 @@ class UpdateCourse(Resource):
         """update course """
         pass
 
+
 @course_namespace.route('/course/<int:course_id>')
 class DeleteCourse(Resource):
     def patch(self, course_id):
         """delete course """
         pass
+
 
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')
 class RegisterUserToCourse(Resource):

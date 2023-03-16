@@ -6,6 +6,7 @@ from .course.views import course_namespace
 from .config.config import config_dict
 from .utilities import db
 from .models.courses import Course
+from .models.course_work import CourseWork
 from .models.users import User
 from flask_migrate import Migrate
 from flask_jwt_extended import  JWTManager
@@ -28,7 +29,8 @@ def create_app(config=config_dict['dev']):
         return {
             'db': db,
             'user': User,
-            'course': Course
+            'course': Course,
+            'course_work': CourseWork
 
         }
 
