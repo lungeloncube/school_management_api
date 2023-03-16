@@ -2,7 +2,7 @@ from flask_restx import Namespace, Resource, fields
 from ..models.courses import Course
 from http import HTTPStatus
 from flask_jwt_extended import jwt_required
-
+from ..models.users import User
 
 course_namespace = Namespace('course', description="Namespace for courses.py")
 
@@ -43,16 +43,35 @@ class CourseGetCreate(Resource):
         return new_course, HTTPStatus.CREATED
 
 
+@course_namespace.route('/course/<int:user_id>/courses')
+class UserCourses(Resource):
+    @course_namespace.marshal_with(course_model)
+    def get(self, user_id):
+        """
+        Get all specific courses.py for a user
+        :param user_id:
+        :return:
+        """
+        user = User.get_by_id(user_id)
+        if user is not None:
+            courses = user.courses
+
+            return courses, HTTPStatus.OK
+
+
 @course_namespace.route('/course/<int:course_id>')
 class GetUpdateDeleteCourse(Resource):
     @course_namespace.marshal_with(course_model)
+    @jwt_required()
     def get(self, course_id):
         """get course by id """
-        course=Course.get_by_id(course_id)
+        course = Course.get_by_id(course_id)
         return course, HTTPStatus.OK
+
     def patch(self, course_id):
         """update course  """
         pass
+
     def delete(self, course_id):
         """delete course by id """
         pass
@@ -60,9 +79,14 @@ class GetUpdateDeleteCourse(Resource):
 
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')
 class RegisterUserToCourse(Resource):
-    def post(self, user_id):
+    def patch(self, user_id, course_id):
         """Registers user to course"""
-        pass
+        course = Course.get_by_id(course_id)
+        if course is not None:
+            user = User.get_by_id(user_id)
+            user.courses = [course]
+            user.save()
+        return {"success": True}
 
 
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')

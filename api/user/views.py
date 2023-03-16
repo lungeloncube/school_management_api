@@ -1,5 +1,6 @@
 from flask_restx import Resource, Namespace
 
+
 user_namespace = Namespace('user', description="Namespace for user")
 
 
@@ -36,15 +37,6 @@ class GetSpecificCourseByUser(Resource):
         pass
 
 
-@user_namespace.route('/user/<int:user_id>/courses.py')
-class UserCourses(Resource):
-    def get(self, user_id):
-        """
-        Get all specific courses.py for a user
-        :param user_id:
-        :return:
-        """
-        pass
 
 
 @user_namespace.route('/course/status/<int:course_id>')
