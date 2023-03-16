@@ -3,6 +3,7 @@ from flask import request
 from ..models.users import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from http import HTTPStatus
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 auth_namespace = Namespace('auth', description='a namespace for authentication')
 
@@ -15,27 +16,28 @@ signup_model = auth_namespace.model(
     }
 )
 user_model = auth_namespace.model(
-    'User',{
+    'User', {
         'id': fields.Integer(),
         'name': fields.String(required=True, description="User`s name"),
         'email': fields.String(required=True, description="User`s email address"),
         'password_hash': fields.String(required=True, description="The users password"),
-        'is_active':fields.Boolean(description="Shows if user is active"),
+        'is_active': fields.Boolean(description="Shows if user is active"),
         'is_staff': fields.Boolean(description="Show if user is staff"),
         'is_admin': fields.Boolean(description="shows sif user is admin")
 
     }
 )
 
-@auth_namespace.route('/')
-class HelloAuthentication(Resource):
-    def get(self):
-        return {"message": "Hello auth"}
+login_model = auth_namespace.model(
+    'login', {
+        'email': fields.String(required=True, description="Email address used for signup"),
+        'password': fields.String(required=True, description="A password")
+    }
+)
 
 
 @auth_namespace.route('/signup')
 class SignUp(Resource):
-
 
     @auth_namespace.expect(signup_model)
     @auth_namespace.marshal_with(user_model)
@@ -51,8 +53,20 @@ class SignUp(Resource):
         return new_user, HTTPStatus.CREATED
 
 
-@auth_namespace.route('login')
+@auth_namespace.route('/login')
 class Login(Resource):
+    @auth_namespace.expect(login_model)
     def post(self):
-        """generate a JWT"""
-        pass
+        """Generate a JWT"""
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        user = User.query.filter_by(email=email).first()
+        if (user is not None) and check_password_hash(user.password_hash, password):
+            access_token = create_access_token(identity=user.email)
+            refresh_token = create_refresh_token(identity=user.email)
+            response = {
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }
+            return response, HTTPStatus.OK
