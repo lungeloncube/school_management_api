@@ -26,4 +26,8 @@ class Course(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    @classmethod
+    def get_by_id(cls,id):
+        return cls.query.get_or_404(id)
+
 

@@ -44,16 +44,17 @@ class CourseGetCreate(Resource):
 
 
 @course_namespace.route('/course/<int:course_id>')
-class UpdateCourse(Resource):
+class GetUpdateDeleteCourse(Resource):
+    @course_namespace.marshal_with(course_model)
+    def get(self, course_id):
+        """get course by id """
+        course=Course.get_by_id(course_id)
+        return course, HTTPStatus.OK
     def patch(self, course_id):
-        """update course """
+        """update course  """
         pass
-
-
-@course_namespace.route('/course/<int:course_id>')
-class DeleteCourse(Resource):
-    def patch(self, course_id):
-        """delete course """
+    def delete(self, course_id):
+        """delete course by id """
         pass
 
 
