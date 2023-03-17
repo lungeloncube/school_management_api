@@ -6,6 +6,7 @@ from .course.views import course_namespace
 from .config.config import config_dict
 from .utilities import db
 from .models.courses import Course
+from .models.users_to_courses import UserToCourse
 from .models.course_work import CourseWork
 from .models.users import User
 from flask_migrate import Migrate
@@ -30,7 +31,8 @@ def create_app(config=config_dict['dev']):
             'db': db,
             'user': User,
             'course': Course,
-            'course_work': CourseWork
+            'course_work': CourseWork,
+            'user_to_course': UserToCourse
 
         }
 

@@ -14,9 +14,9 @@ class Course(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), nullable=False)
     status = db.Column(db.Enum(Statuses), default=Statuses.INPROGRESS)
-    user = db.Column(db.Integer(), db.ForeignKey('users.id'))
+    # user = db.Column(db.Integer(), db.ForeignKey('users.id'))
     courses_work = db.relationship('CourseWork', backref='courses', lazy=True)
-
+    user = db.relationship("User", secondary="users_to_courses")
 
     def __repr__(self):
         return f"<Course {self.id}"
