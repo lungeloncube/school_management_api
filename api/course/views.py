@@ -1,4 +1,6 @@
 from flask_restx import Namespace, Resource, fields
+
+from ..models.users_to_courses import UserToCourse
 from ..models.courses import Course
 from http import HTTPStatus
 from flask_jwt_extended import jwt_required
@@ -92,8 +94,6 @@ class GetUpdateDeleteCourse(Resource):
             return course, HTTPStatus.NO_CONTENT
 
 
-
-
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')
 class RegisterUserToCourse(Resource):
     def patch(self, user_id, course_id):
@@ -101,13 +101,23 @@ class RegisterUserToCourse(Resource):
         course = Course.get_by_id(course_id)
         if course is not None:
             user = User.get_by_id(user_id)
-            user.courses = [course]
+            # user.courses = [course]
+
+            user.courses.append(course)
             user.save()
-        return {"success": True}
+            return {"success": True}
 
 
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')
 class DeRegisterUserFromCourse(Resource):
-    def delete(self, user_id, course_id):
+    @course_namespace.expect(course_model)
+    @course_namespace.marshal_with(course_model)
+    def post(self, user_id, course_id):
         """DeRegisters user from course"""
-        pass
+        user = User.get_by_id(user_id)
+        user_courses = User.query.join(UserToCourse).join(Course).filter((UserToCourse.user_id ==
+                                                                          user.id)).first()
+        # user_courses.delete()
+
+        if user_courses is not None:
+            return user_courses, {"success": "Student deregistered"}

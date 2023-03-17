@@ -12,3 +12,4 @@ class UserToCourse(db.Model):
 
     user = relationship('User', backref=backref("users_to_courses", cascade="all, delete-orphan"))
     course = relationship('Course', backref=backref("users_to_courses", cascade="all, delete-orphan"))
+
