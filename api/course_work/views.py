@@ -17,7 +17,7 @@ course_work_model = course_work_namespace.model(
 
 @course_work_namespace.route('/student/<int:user_id>/course/<int:course_id>')
 class AddCourseWork(Resource):
-    @course_work_namespace.marshal_with(course_work_model)
+    # @course_work_namespace.marshal_with(course_work_model)
     @jwt_required()
     def post(self, user_id, course_id):
         """ Add course work.py"""
@@ -26,16 +26,26 @@ class AddCourseWork(Resource):
         if logged_user.is_admin or logged_user.is_staff:
             student = User.get_by_id(user_id)
             course = Course.get_by_id(course_id)
-            if student is not None:
-                course_work = CourseWork(
-                    mark=data['mark']
-                )
-                course_work.save()
-                student.courses_work.append(course_work)
-                student.save()
-                course.courses_work.append(course_work)
-                course.save()
 
-                return {"Success": "marks saved for: " + student.name}, HTTPStatus.OK
+            if student is not None:
+                if course is not None:
+                    # check if registered for course
+                    if any(course == course for x in student.courses):
+                        course_work = CourseWork(
+                            mark=data['mark']
+                        )
+                        course_work.save()
+                        student.courses_work.append(course_work)
+                        student.save()
+                        course.courses_work.append(course_work)
+                        course.save()
+                        return {"Success": "marks saved for: " + student.name}, HTTPStatus.OK
+                    else:
+                        return {"Failed": "student not registered for this course"},HTTPStatus.BAD_REQUEST
+
+
+                else:
+                    return {"Failed": "Course not found: "}, HTTPStatus.NOT_FOUND
+            return {"Failed": "Student with that id is not found: "}, HTTPStatus.NOT_FOUND
         else:
             return {"Failed": "You do not have permission to do this operation"}, HTTPStatus.FORBIDDEN
