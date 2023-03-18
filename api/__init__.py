@@ -3,6 +3,7 @@ from flask_restx import Api
 from .user.views import user_namespace
 from .auth.views import auth_namespace
 from .course.views import course_namespace
+from .course_work.views import course_work_namespace
 from .config.config import config_dict
 from .utilities import db
 from .models.courses import Course
@@ -24,6 +25,7 @@ def create_app(config=config_dict['dev']):
     api.add_namespace(user_namespace, path='/users')
     api.add_namespace(auth_namespace, path='/auth')
     api.add_namespace(course_namespace, path='/courses')
+    api.add_namespace(course_work_namespace, path='/course_work')
 
     @app.shell_context_processor
     def make_shell_context():
