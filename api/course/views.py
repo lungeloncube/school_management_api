@@ -2,7 +2,7 @@ from flask_restx import Namespace, Resource, fields
 
 from ..models.courses import Course
 from http import HTTPStatus
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models.users import User
 
 course_namespace = Namespace('course', description="Namespace for courses.py")
@@ -34,6 +34,8 @@ class CourseGetCreate(Resource):
     @jwt_required()
     def post(self):
         """create course"""
+        logged_user = User.query.filter_by(email=get_jwt_identity()).first()
+
         data = course_namespace.payload
         new_course = Course(
             id=data['id'],
@@ -57,8 +59,9 @@ class UserCourses(Resource):
         user = User.get_by_id(user_id)
         if user is not None:
             courses = user.courses
-
             return courses, HTTPStatus.OK
+        else:
+            return {"Failed":"User with provided iD does not exist"},HTTPStatus.BAD_REQUEST
 
 
 @course_namespace.route('/course/<int:course_id>')
@@ -68,8 +71,10 @@ class GetUpdateDeleteCourse(Resource):
     def get(self, course_id):
         """get course by id """
         course = Course.get_by_id(course_id)
-
-        return course, HTTPStatus.OK
+        if course is not None:
+            return course, HTTPStatus.OK
+        else:
+            return {"Failed": "course with that ID does not exist"}, HTTPStatus.NOT_FOUND
 
     @course_namespace.expect(course_model)
     @course_namespace.marshal_with(course_model)
@@ -84,6 +89,8 @@ class GetUpdateDeleteCourse(Resource):
 
             course.save()
             return course, HTTPStatus.OK
+        else:
+            return {"Failed":"Course with provided id does not exist"}, HTTPStatus.BAD_REQUEST
 
     @course_namespace.marshal_with(course_model)
     @jwt_required()
@@ -93,6 +100,8 @@ class GetUpdateDeleteCourse(Resource):
         if course is not None:
             course.delete()
             return course, HTTPStatus.NO_CONTENT
+        else:
+            return {"failed":"Course not found"}, HTTPStatus.BAD_REQUEST
 
 
 @course_namespace.route('/course/<int:course_id>/<int:user_id>')
@@ -103,20 +112,32 @@ class RegisterUserToCourse(Resource):
         course = Course.get_by_id(course_id)
         if course is not None:
             user = User.get_by_id(user_id)
-            user.courses.append(course)
-            user.save()
-            return {"success": "Student registered for: "+course.name}
+            logged_user = User.query.filter_by(email=get_jwt_identity()).first()
+            if logged_user.email == user.email or logged_user.is_admin or logged_user.is_staff:
+                user.courses.append(course)
+                user.save()
+                return {"success": "Student registered for: " + course.name}
+            else:
+                return {"Failed": "You can not perform this action"}, HTTPStatus.FORBIDDEN
+        else:
+            return {"Failed": "This course does not exist"}, HTTPStatus.BAD_REQUEST
 
 
-@course_namespace.route('/course/<int:course_id>/<int:user_id>')
+@course_namespace.route('/course/<int:course_id>/<int:student_id>')
 class DeRegisterUserFromCourse(Resource):
     @jwt_required()
-    def post(self, user_id, course_id):
+    def post(self, student_id, course_id):
         """DeRegisters user from course"""
-        user = User.get_by_id(user_id)
+        student = User.get_by_id(student_id)
+        if student is not None:
+            logged_user = User.query.filter_by(email=get_jwt_identity()).first()
+            if logged_user.is_admin or logged_user.email == student.email:
 
-        course = Course.get_by_id(course_id)
-        user.courses.remove(course)
-        user.save()
-        return {"success": " deregistered from: "+course.name}
-
+                course = Course.get_by_id(course_id)
+                student.courses.remove(course)
+                student.save()
+                return {"success": " deregistered from: " + course.name}
+            else:
+                return {"Failed": " You do not have permission to carry out this operation, contact admin"}
+        else:
+            return {"Failed": " Student with this id does not exist"}

@@ -44,13 +44,17 @@ class SignUp(Resource):
     def post(self):
         """create user"""
         data = request.get_json()
-        new_user = User(
-            name=data.get('name'),
-            email=data.get('email'),
-            password_hash=generate_password_hash(data.get('password'))
-        )
-        new_user.save()
-        return new_user, HTTPStatus.CREATED
+        users = User.query.filter_by(email=data['email']).all()
+        if users is None:
+            new_user = User(
+                name=data.get('name'),
+                email=data.get('email'),
+                password_hash=generate_password_hash(data.get('password'))
+            )
+            new_user.save()
+            return new_user, HTTPStatus.CREATED
+        else:
+            return {"failed":"User already exist"}, HTTPStatus.CONFLICT
 
 
 @auth_namespace.route('/login')
@@ -70,6 +74,8 @@ class Login(Resource):
                 'refresh_token': refresh_token
             }
             return response, HTTPStatus.OK
+        else:
+            return {"Failed":"Account email or password incorrect!"}, HTTPStatus.BAD_REQUEST
 
 
 @auth_namespace.route('/refresh')

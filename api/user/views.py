@@ -89,14 +89,4 @@ class GetUpdateDeleteUser(Resource):
                 return {"Success": "Deleted user"}, HTTPStatus.NO_CONTENT
 
 
-@user_namespace.route('/user/gpa/<int:user_id>')
-class GetGPA(Resource):
-    def patch(self, user_id):
-        """
-        get user gpa
-        """
-        pass
 
-
-def calculateGPA():
-    pass
