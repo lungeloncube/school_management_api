@@ -80,7 +80,7 @@ class GetUpdateDeleteUser(Resource):
 
             logged_user = User.query.filter_by(email=get_jwt_identity()).first()
 
-            if logged_user.is_staff is False or logged_user.is_admin is False:
+            if logged_user.is_admin is False:
                 return {"failed": "You do not have the permissions to do this operation"}, HTTPStatus.FORBIDDEN
             elif logged_user.email is user.email:
                 return {"failed": "You can not delete your account please contact admin"}, HTTPStatus.FORBIDDEN

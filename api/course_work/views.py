@@ -89,13 +89,16 @@ class GetOverallGPA(Resource):
         if user is not None:
 
             cowor = user.courses_work
+            if len(cowor) > 0:
 
-            for c in cowor:
-                total_course_work += c.mark
+                for c in cowor:
+                    total_course_work += c.mark
 
-            average_mark = (total_course_work / (len(cowor) * 100)) * 100
-            gpa = calculate_gpa(average_mark)
-            return {"GPA": gpa, "average_mark": average_mark}, HTTPStatus.OK
+                average_mark = (total_course_work / (len(cowor) * 100)) * 100
+                gpa = calculate_gpa(average_mark)
+                return {"GPA": gpa, "average_mark": average_mark}, HTTPStatus.OK
+            else:
+                return {"Message": "This student has no course work"}, HTTPStatus.OK
         else:
             return {"Message": "This student has no course work"}, HTTPStatus.OK
 
@@ -109,7 +112,6 @@ class GetCourseGPA(Resource):
         """
         user = User.get_by_id(student_id)
         course = Course.get_by_id(course_id)
-        # user_course=course.user.courses_work.first()
 
         total_course_work = 0
         if user is not None:
@@ -121,9 +123,16 @@ class GetCourseGPA(Resource):
                     if c.course == course.id:
                         total_course_work += c.mark
 
-                average_mark = (total_course_work / (len(cowor) * 100)) * 100
-                gpa = calculate_gpa(average_mark)
-                return {"GPA": gpa, "average_mark": average_mark, "course name":course.name}, HTTPStatus.OK
+                if len(cowor) > 0:
+
+                    average_mark = (total_course_work / (len(cowor) * 100)) * 100
+                    gpa = calculate_gpa(average_mark)
+                    return {"GPA": gpa, "average_mark": average_mark, "course name": course.name}, HTTPStatus.OK
+                else:
+                    return {
+                        "failed": "no course work"
+                    }
+
             else:
                 return {
                     "failed": "no course work"

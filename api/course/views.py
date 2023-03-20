@@ -37,13 +37,21 @@ class CourseGetCreate(Resource):
         logged_user = User.query.filter_by(email=get_jwt_identity()).first()
 
         data = course_namespace.payload
-        new_course = Course(
-            id=data['id'],
-            name=data['name'],
-            status=data['status']
-        )
-        new_course.save()
-        return new_course, HTTPStatus.CREATED
+        courses=Course.query.filter_by(name=data['name']).all()
+        if logged_user.is_admin or logged_user.is_staff:
+            if len(courses)<0:
+                new_course = Course(
+                    id=data['id'],
+                    name=data['name'],
+                    status=data['status']
+                )
+                new_course.save()
+                return new_course, HTTPStatus.CREATED
+            else:
+                return {"Failed":"Course with that name already exists"},HTTPStatus.BAD_REQUEST
+        else:
+            return  {"Failed":"You do not have permissions to add  a course"},HTTPStatus.FORBIDDEN
+
 
 
 @course_namespace.route('/course/<int:user_id>/courses')
@@ -123,7 +131,7 @@ class RegisterUserToCourse(Resource):
             return {"Failed": "This course does not exist"}, HTTPStatus.BAD_REQUEST
 
 
-@course_namespace.route('/course/<int:course_id>/<int:student_id>')
+@course_namespace.route('/course/deregister/<int:course_id>/<int:student_id>')
 class DeRegisterUserFromCourse(Resource):
     @jwt_required()
     def post(self, student_id, course_id):
