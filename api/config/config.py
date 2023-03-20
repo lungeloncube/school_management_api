@@ -20,7 +20,9 @@ class DevConfig(Config):
 
 
 class TestConfig(Config):
-    pass
+    DEBUG = config('DEBUG', cast=bool)
+    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'test.sqlite3')
 
 
 class ProdConfig(Config):

@@ -45,7 +45,7 @@ class SignUp(Resource):
         """create user"""
         data = request.get_json()
         users = User.query.filter_by(email=data['email']).all()
-        if users is None:
+        if len(users) < 1:
             new_user = User(
                 name=data.get('name'),
                 email=data.get('email'),
@@ -54,7 +54,7 @@ class SignUp(Resource):
             new_user.save()
             return new_user, HTTPStatus.CREATED
         else:
-            return {"failed":"User already exist"}, HTTPStatus.CONFLICT
+            return {"failed": "User already exist"}, HTTPStatus.CONFLICT
 
 
 @auth_namespace.route('/login')
@@ -75,7 +75,7 @@ class Login(Resource):
             }
             return response, HTTPStatus.OK
         else:
-            return {"Failed":"Account email or password incorrect!"}, HTTPStatus.BAD_REQUEST
+            return {"Failed": "Account email or password incorrect!"}, HTTPStatus.BAD_REQUEST
 
 
 @auth_namespace.route('/refresh')
